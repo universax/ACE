@@ -7,3 +7,6 @@
 **gcp-credentials/
 **logs/
 .vscode
+**/.cache/**
+**/models/**
+**/log/**
