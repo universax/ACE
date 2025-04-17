@@ -189,3 +189,45 @@ services:
       - chat-controller
       - redis
       - bot-web-ui-speech-event
+      - reazonspeech-asr      # ★ 自作ASRサービスを追加
+      - stylebertvits2-tts  # ★ 自作TTSサービスを追加
+
+# --- ★ 自作ASRサービスを追加 ★ ---
+  reazonspeech-asr: # サービス名 (speech-config.yamlで使う)
+    build:
+      # docker-compose.yml(deploy/docker/内)から見たReazonSpeechディレクトリへのパス
+      context: ./../../../../reazonspeech_asr # ★★★ 要確認・調整 ★★★
+      dockerfile: Dockerfile
+    container_name: asr-server
+    network_mode: "host" # ★ ホストネットワークを使用
+    deploy: # GPUリソース
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: 1 # または必要なGPU数
+    # volumes: # 必要ならキャッシュ等をマウント
+    environment:
+      - LOG_LEVEL=INFO
+      - ASR_DEVICE=cuda
+      - VAD_DEVICE=cuda # VADもGPUを使う場合
+
+  # --- ★ 自作TTSサービスを追加 ★ ---
+  stylebertvits2-tts: # サービス名 (speech-config.yamlで使う)
+    build:
+      # docker-compose.yml(deploy/docker/内)から見たStyleBertVits2ディレクトリへのパス
+      context: ./../../../../stylebertvits2_tts # ★★★ 要確認・調整 ★★★
+      dockerfile: Dockerfile
+    container_name: tts-server
+    network_mode: "host" # ★ ホストネットワークを使用
+    deploy: # GPUリソース
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: 1 # または必要なGPU数
+    # volumes:
+    environment:
+      - LOG_LEVEL=INFO
