@@ -6,4 +6,6 @@
 **tfplan
 **gcp-credentials/
 **logs/
+**log/
 .vscode
+microservices/ace_agent/4.1/deploy/docker/docker_init.sh
