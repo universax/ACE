@@ -1,0 +1,80 @@
+schema_version: '0.0.10'
+name: 'tokkio-tmik'
+spec:
+  infra:
+    csp: 'gcp'
+    backend:
+      bucket: 'tmik-nvidia-ai-enterprise-dev-2'
+      credentials: "{{ lookup('env', 'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE', default=Undefined) }}"
+    provider:
+      project: "{{ lookup('env', 'CLOUDSDK_CORE_PROJECT', default=Undefined) }}"
+      credentials: "{{ lookup('env', 'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE', default=Undefined) }}"
+    configs:
+      cns:
+        override_values:
+          cns_nvidia_driver: yes
+      user_access_cidrs:
+        - '115.65.214.231/32'
+      dev_access_cidrs:
+        - '34.146.57.138/32'
+      region: 'asia-northeast1'
+      ui_bucket_location:
+        location: 'ASIA1'
+        region: ''
+        alternate_region: ''
+      ssh_public_key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"
+      ssh_private_key_path: "{{ lookup('env', 'HOME') + '/.ssh/id_rsa' }}"
+      dns_zone_name: 'tmik-dev'
+      enable_cdn: false
+      clusters:
+        app:
+          private_instance: true
+          master:
+            type: 'g2-standard-24'
+            guest_accelerators:
+            - type: 'nvidia-l4'
+              count: '2'
+          features:
+            cns: true
+            app: true
+        turn:
+          private_instance: false
+          master:
+            type: 'e2-medium'
+            guest_accelerators: []
+          features:
+            coturn: true
+  platform:
+    secrets:
+      ngc_cli_api_key: "{{ lookup('env', 'NGC_CLI_API_KEY', default=Undefined) }}"
+  app:
+    configs:
+      app_settings:
+        k8s_secrets:
+          - name: 'ngc-api-key-secret'
+            type: 'Opaque'
+            entries:
+              - key: NGC_CLI_API_KEY
+                value: "{{ lookup('env', 'NGC_CLI_API_KEY', default=Undefined) }}"
+          - name: 'openai-key-secret'
+            type: 'Opaque'
+            entries:
+              - key: OPENAI_API_KEY
+                value: "{{ lookup('env', 'OPENAI_API_KEY', default=Undefined) }}"
+          - name: 'nvidia-api-key-secret'
+            type: 'Opaque'
+            entries:
+              - key: NVIDIA_API_KEY
+                value: "{{ lookup('env', 'NVIDIA_API_KEY', default=Undefined) }}"
+          - name: 'ngc-docker-reg-secret'
+            type: 'dockerconfigjson'
+            registry_name: "nvcr.io"
+            username: '$oauthtoken'
+            password: "{{ lookup('env', 'NGC_CLI_API_KEY', default=Undefined) }}"
+          - name: 'elevenlabs-api-key-secret'
+            type: 'Opaque'
+            entries:
+              - key: ELEVENLABS_API_KEY
+                value: "{{ lookup('env', 'ELEVENLABS_API_KEY', default=Undefined) }}"
+    secrets:
+      ngc_cli_api_key: "{{ lookup('env', 'NGC_CLI_API_KEY', default=Undefined) }}"
