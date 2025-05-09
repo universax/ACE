@@ -1,5 +1,3 @@
-version: "3.9"
-
 secrets:
   ngc_api_key:
     environment: NGC_CLI_API_KEY   # ホスト側で export しておく
@@ -10,7 +8,7 @@ volumes:
 services:
   a2f-3d-init:
     image: nvcr.io/nim/nvidia/audio2face-3d:1.3
-    container_name: a2f-3d-init
+    container_name: a2f-init
     secrets: [ngc_api_key]
     working_dir: /opt/nvidia/a2f_pipeline
     entrypoint:
@@ -32,6 +30,7 @@ services:
 
   a2f-3d-service:
     image: nvcr.io/nim/nvidia/audio2face-3d:1.3
+    container_name: a2f-service
     secrets: [ngc_api_key]
     depends_on:
       a2f-3d-init:
@@ -49,11 +48,13 @@ services:
       - LD_LIBRARY_PATH=/usr/local/lib/:/root/.local/lib/
       - USE_NEW_NVSTREAMMUX=yes
       - NIM_DISABLE_MODEL_DOWNLOAD=true
-      - NIM_SKIP_A2F_START=true
+      # - NIM_SKIP_A2F_START=true
     volumes:
       - a2f-3d-init-data:/tmp/a2x
       - ./configs/:/mnt/configs/
     network_mode: "host"
+    ports:
+      - "52000:52000"
     deploy:
       resources:
         reservations:
@@ -61,3 +62,13 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+  
+  # a2f-controller:
+  #   image: nvcr.io/nvidia/ace/a2f_controller:1.0.6
+  #   container_name: a2f-controller
+  #   entrypoint: ./service/launch_service.py /configs/a2f_controller.yaml
+  #   # network_mode: "host"
+  #   ports:
+  #     - "52000:52000"
+  #   volumes:
+  #     - ./configs/a2f_controller.yaml:/configs/a2f_controller.yaml:ro
