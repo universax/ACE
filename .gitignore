@@ -9,3 +9,5 @@
 **log/
 .vscode
 microservices/ace_agent/4.1/deploy/docker/docker_init.sh
+workflows/tokkio/5.0.0-beta/scripts/one-click/gcp/my-config.env
+workflows/tokkio/5.0.0-beta/scripts/one-click/gcp/modern-setting-230010-d26e985b8087.json
