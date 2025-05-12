@@ -6,4 +6,6 @@
 **tfplan
 **gcp-credentials/
 **logs/
+**log/
 .vscode
+*.log
