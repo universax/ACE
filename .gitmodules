@@ -1,0 +1,9 @@
+[submodule "microservices/ace_agent/4.1/samples/ace_jp_speech_bot"]
+	path = microservices/ace_agent/4.1/samples/ace_jp_speech_bot
+	url = https://github.com/universax/ace_jp_speech_bot.git
+[submodule "microservices/reazonspeech_asr"]
+	path = microservices/reazonspeech_asr
+	url = https://github.com/universax/reazonspeech_asr.git
+[submodule "microservices/stylebertvits2_tts"]
+	path = microservices/stylebertvits2_tts
+	url = https://github.com/universax/stylebertvits2_tts.git
