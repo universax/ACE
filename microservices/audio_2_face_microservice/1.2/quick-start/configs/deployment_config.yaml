@@ -1,0 +1,40 @@
+common:
+  stream_number: 10
+  add_silence_padding_after_audio: false
+  queue_size_after_streammux: 1
+  queue_size_after_a2e: 1
+  queue_size_after_a2f: 300
+  fps_logging_interval_second: 1
+  min_sample_rate: 16000
+  max_sample_rate: 144000
+  max_len_uuid: 50
+
+logging:
+  log_level: info
+
+endpoints:
+  use_bidirectional: false          # 旧 ACE コントローラ互換
+  unidirectional:
+    server:                         # Audio 受信
+      url: 0.0.0.0:50000
+      secure_mode: "disabled"
+    client:                         # アニメ送信
+      url: 0.0.0.0:51000
+      secure_mode: "disabled"
+
+A2E:
+  enabled: true
+  inference-interval: 10
+  model_path: "/opt/nvidia/a2f_pipeline/a2e_data/data/networks/"
+  emotions:
+    emotion_contrast: 1.0
+    live_blend_coef: 0.7
+    preferred_emotion_strength: 0.5
+    enable_preferred_emotion: true
+    emotion_strength: 0.6
+    max_emotions: 3
+
+A2F:
+  model_path: "/opt/nvidia/a2f_pipeline/a2f_data/data/networks/claire_v1.3"
+  api:
+    bs_weight_multipliers: [1.0] * 52   # 52 要素すべて 1.0

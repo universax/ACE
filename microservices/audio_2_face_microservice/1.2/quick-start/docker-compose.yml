@@ -1,44 +1,24 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+secrets:
+  ngc_api_key:
+    environment: NGC_CLI_API_KEY   # ホスト側で export しておく
+
+volumes:
+  a2f-3d-init-data: {}
 
 services:
-  a2f-init:
-    image: nvcr.io/eevaigoeixww/animation/audio2face:1.0.11
-    container_name: a2f-init-container
-    entrypoint: >
-      sh -c "./service/generate_trt_model.py built-in claire_v1.3 --fp16 &&
-             ./service/generate_a2e_trt_model.py --fp16"
+  a2f-3d-init:
+    image: nvcr.io/nim/nvidia/audio2face-3d:1.3
+    container_name: a2f-3d-init
+    secrets: [ngc_api_key]
+    working_dir: /opt/nvidia/a2f_pipeline
+    entrypoint:
+      - sh
+      - -c
+      - |
+          /opt/nvidia/a2f_pipeline/service/generate_trt_models.py
     volumes:
-      - a2f-init-data:/tmp/a2f_pipeline/
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [ gpu ]
-
-  a2f-service:
-    image: nvcr.io/eevaigoeixww/animation/audio2face:1.0.11
-    depends_on:
-      a2f-init:
-        condition: service_completed_successfully
-    entrypoint: ./service/launch_service.py /configs/a2f_config.yaml
-    volumes:
-      - a2f-init-data:/tmp/a2f_pipeline/
-      - ./a2f_config.yaml:/configs/a2f_config.yaml:ro
+      - a2f-3d-init-data:/tmp/a2x
+      - ./configs/:/mnt/configs/
     network_mode: "host"
     deploy:
       resources:
@@ -48,13 +28,34 @@ services:
               count: 1
               capabilities: [gpu]
 
+  a2f-3d-service:
+    image: nvcr.io/nim/nvidia/audio2face-3d:1.3
+    secrets: [ngc_api_key]
+    depends_on:
+      a2f-3d-init:
+        condition: service_completed_successfully
+    entrypoint:
+      - sh
+      - -c
+      - |
+          a2f_pipeline.run \
+            --deployment-config  /apps/configs/deployment_config.yaml \
+            --stylization-config /apps/configs/stylization_config.yaml \
+            --advanced-config    /apps/configs/advanced_config.yaml
 
-  a2f-controller:
-    image: nvcr.io/eevaigoeixww/animation/a2f_controller:1.0.6
-    entrypoint: ./service/launch_service.py /configs/ac_a2f_config.yaml
-    network_mode: "host"
+    environment:
+      - LD_LIBRARY_PATH=/usr/local/lib/:/root/.local/lib/
+      - USE_NEW_NVSTREAMMUX=yes
+      - NIM_DISABLE_MODEL_DOWNLOAD=true
+      - NIM_SKIP_A2F_START=true
     volumes:
-      - ./ac_a2f_config.yaml:/configs/ac_a2f_config.yaml:ro
-
-volumes:
-  a2f-init-data: {}
+      - a2f-3d-init-data:/tmp/a2x
+      - ./configs/:/mnt/configs/
+    network_mode: "host"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

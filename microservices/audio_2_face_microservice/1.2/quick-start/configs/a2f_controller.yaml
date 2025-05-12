@@ -1,0 +1,27 @@
+audio2face:
+  send-audio:
+    ip: 0.0.0.0
+    port: 50000
+  receive-anim-data:
+    port: 51000
+    max_wait_time_idle_ms: 30000
+
+public-interface:
+  port: 52000
+  max-user-number: 10
+
+common:
+  max_processing_duration_second: 300
+  max_audio_buffer_size_second: 10
+  max_audio_clip_size_second: 300
+  max_sample_rate: 144000
+  fps_logging_interval_second: 1
+
+  garbage_collector:
+    enabled: true
+    interval_run_second: 10
+    max_size_stored_data_second: 60
+
+
+
+
