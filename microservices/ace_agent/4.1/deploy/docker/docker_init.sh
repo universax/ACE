@@ -1,4 +1,4 @@
-export PIPELINE=speech_umim
+export PIPELINE=avatar_umim
 export TAG=4.1.0
 export CLI_CMD="aceagent chat cli -c $PWD/$BOT_PATH --log-path ${PWD}/log"
 export DOCKER_REGISTRY=nvcr.io/nvidia/ace
